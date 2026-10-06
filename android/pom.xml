@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <!-- android: App entry, build, app-level wiring.
-       Card: android/AGENTS.md   Registry: modules.toml [module.android] -->
+       Card: android/AGENTS.md -->
   <parent>
     <groupId>dev.breaker</groupId>
     <artifactId>breaker</artifactId>

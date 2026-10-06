@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <!-- android/modules/audio — microphone capture, resampling, noise suppression,
-       Card: android/modules/audio/AGENTS.md   Registry: modules.toml [module.android_audio] -->
+       Card: android/modules/audio/AGENTS.md -->
   <parent>
     <groupId>dev.breaker</groupId>
     <artifactId>android</artifactId>

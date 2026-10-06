@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <!-- android/modules/sync — SyncService.
-       Card: android/modules/sync/AGENTS.md   Registry: modules.toml [module.android_sync] -->
+       Card: android/modules/sync/AGENTS.md -->
   <parent>
     <groupId>dev.breaker</groupId>
     <artifactId>android</artifactId>

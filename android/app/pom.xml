@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <!--‒‒ android/app — App entry, DI container.
-       Card: android/app/AGENTS.md   Registry: modules.toml [module.android_app]
+       Card: android/app/AGENTS.md
 
        The APK pipeline AGP used to run, as plain Maven steps (spike 003). Each step is a
        published, pinned tool; none is a third-party Android plugin:

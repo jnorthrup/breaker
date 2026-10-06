@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <!-- android/modules/stt-server — SttEngine (server path).
-       Card: android/modules/stt-server/AGENTS.md   Registry: modules.toml [module.android_stt_server] -->
+       Card: android/modules/stt-server/AGENTS.md -->
   <parent>
     <groupId>dev.breaker</groupId>
     <artifactId>android</artifactId>

@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <!-- server/modules/training — TrainingApi.
-       Card: server/modules/training/AGENTS.md   Registry: modules.toml [module.server_training] -->
+       Card: server/modules/training/AGENTS.md -->
   <parent>
     <groupId>dev.breaker</groupId>
     <artifactId>breaker</artifactId>
