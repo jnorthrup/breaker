@@ -21,6 +21,6 @@ Two rules shape the module. It has no Android imports and no I/O, so it runs und
 plain JUnit. And a dictation that runs on the phone never falls through to a server
 or a cloud formatter.
 
-Run the tests with `./gradlew :android:modules:core:test`.
+Run the tests with `./mvnw -pl android/modules/core test`.
 
 Full module card: `AGENTS.md` in this folder.

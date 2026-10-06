@@ -16,15 +16,14 @@ nesting-doll model. Every level is documented the same complete way:
 | Artifact | File | What it's for |
 |---|---|---|
 | Master architecture | `ARCHITECTURE.md` | The whole system: modules, connections, rules. Longer than a typical summary on purpose — it is the single source of truth. Read once; use the map + cards day-to-day. |
-| Module registry (machine-checkable) | `modules.toml` | One entry per module: path, owns, does_not_own, depends_on, public, card. The consistency checker validates the tree against it. |
+| Module registry (machine-checkable) | root `pom.xml` reactor | One entry per module via `<modules>` (walked recursively), each with its own `<dependencies>`. `RepoContractTest.kt` validates the tree against it. |
 | Root module map | `MODULE_MAP.md` | One line per module — find the right module without opening anything. |
 | Module cards | `<module>/AGENTS.md` | The full card per module: Purpose, Owns, Does Not Own, Public Interface, Depends On, Invariants, Test Locations, Test Requirement, Known Gotchas, and How This Module Is Built (recommended, not required). |
 | Module READMEs | `<module>/README.md` | Plain-language summary; a parent's README names its sub-modules. |
 | Decision records | `decisions/ADR-NNN-<slug>.md` | Why we chose what we chose. Index, template and how to propose one: `decisions/README.md`. |
 | Requirements / build order / security / UI | `docs/00`–`docs/07` | The numbered specs. |
 | Glossary | `docs/08-glossary.md` | Plain-language definitions of the terms these docs use. |
-| Consistency checker | `tools/check_repo.py` | Fails if the tree drifts from the registry. Run it after any structural change. |
-| Repo gate | `tools/gate.py` | One command that runs every test tier (check_repo, contract, unit, Gradle build, JUnit counts, NUL check, orphan check) and fails loudly: `python3 tools/gate.py`. `--skip-gradle` is a local shortcut that never reads as a pass. |
+| Consistency + repo gate | `tools/src/test/kotlin/dev/breaker/tools/{PomContractTest,RepoContractTest}.kt` | Fails if the tree drifts from the reactor, cards are missing sections, or cycles exist. Runs with every build: `./mvnw clean install`. |
 
 ## How agents work here
 
@@ -42,14 +41,13 @@ project's agents run, one pair per rank, and says which rank to give which agent
 
 ```bash
 git clone https://github.com/MrTrenchTrucker/breaker.git breaker && cd breaker
-python3 tools/check_repo.py     # must print REPO CONSISTENT
-./gradlew --no-daemon build     # JDK 25 + Android SDK 36; see .github/CONTRIBUTING.md
+./mvnw -B -ntp clean install     # JDK 25 + Android SDK 36; see .github/CONTRIBUTING.md
 ```
 
 ## Security posture (Security Review, two audits)
 
 - Base repo: clean bill of health with 4 fixes — no silent cloud fallthrough,
-  in-app updater deleted, package ID changed, Gradle SHA-256 pinned — plus a
+  in-app updater deleted, package ID changed, build-tool SHA-256 pinned — plus a
   NOTICE file (licensing) [1].
 - sherpa-onnx: safe with three mitigations — pin models to immutable release-asset ids + verify upstream checksum.txt; track decoder bug #3983; keep sherpa-onnx
   off the server's network-exposed path [2].

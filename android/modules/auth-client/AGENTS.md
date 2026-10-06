@@ -94,16 +94,16 @@ server-side (T16).
   bounds that gap.
 
 ## Depends On
-- android (registered in modules.toml)
-- android_core (registered in modules.toml)
+- android
+- android_core
 
 ## Does Not Own
 - Key derivation (crypto)
 - Server auth logic (server/sync-api)
 
 ## Test Locations
-- Unit (Kotlin): `android/modules/auth-client/src/test/kotlin/`, created with the module's first code. Run: `./gradlew :android:modules:auth-client:test`
-- Contract: `tests/contract/test_auth_client_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_auth_client_contract.py`
+- Unit (Kotlin): `android/modules/auth-client/src/test/kotlin/`, created with the module's first code. Run: `./mvnw -pl android/modules/auth-client test`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

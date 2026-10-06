@@ -51,14 +51,14 @@ Git-pull deploy, docker-compose, certs, APK signing, ZT bind, volumes, NOTICE.
 DeployScripts
 
 ## Depends On
-- server (registered in modules.toml)
+- server
 
 ## Does Not Own
 - Application logic of other server modules
 
 ## Test Locations
 - Unit (Python): `tests/unit/server/deploy/`, created with the module's first code. Run: `python3 -m unittest discover -s tests/unit/server/deploy`
-- Contract: `tests/contract/test_deploy_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_deploy_contract.py`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

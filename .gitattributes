@@ -3,5 +3,6 @@
 # containers, so a Windows checkout must not convert them to CRLF.
 * text=auto eol=lf
 *.bat text eol=crlf
+*.cmd text eol=crlf
 *.jar binary
 *.png binary

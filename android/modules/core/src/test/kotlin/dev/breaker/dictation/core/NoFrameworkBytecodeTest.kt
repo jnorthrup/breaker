@@ -29,7 +29,7 @@ import org.junit.Test
  * gates flag every package on it.
  */
 class NoFrameworkBytecodeTest {
-    private val compiledClasses = File("build/classes/kotlin/main")
+    private val compiledClasses = File("target/classes")
 
     @Test
     fun `no compiled class in the domain references a platform or framework package`() {

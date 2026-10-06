@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <!-- contrib: independent reactor for contributed tooling.
+       Not part of the main breaker reactor. Build with:
+         cd contrib && ../mvnw clean install
+       Modules here are not registered in modules.toml and not
+       subject to the main build gate. -->
+  <groupId>dev.breaker.contrib</groupId>
+  <artifactId>contrib</artifactId>
+  <version>0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>tinydiarize-transcriber</module>
+  </modules>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java.release>25</java.release>
+    <kotlin.version>2.4.20</kotlin.version>
+    <junit.version>4.13.2</junit.version>
+    <surefire.version>3.6.0</surefire.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib</artifactId>
+      <version>${kotlin.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
+    <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.jetbrains.kotlin</groupId>
+          <artifactId>kotlin-maven-plugin</artifactId>
+          <version>${kotlin.version}</version>
+          <configuration><jvmTarget>${java.release}</jvmTarget></configuration>
+          <executions>
+            <execution><id>compile</id><goals><goal>compile</goal></goals></execution>
+            <execution><id>test-compile</id><goals><goal>test-compile</goal></goals></execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${surefire.version}</version>
+          <configuration>
+            <argLine>--enable-native-access=ALL-UNNAMED</argLine>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>

@@ -32,7 +32,7 @@ Contracts, registries
 
 ## Test Locations
 - No unit tests: this folder only groups the modules under it and holds no code.
-- Contract: `tests/contract/test_shared_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_shared_contract.py`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement
@@ -64,7 +64,7 @@ agents, not required: an outside contributor may write the code themselves
 - Changes here require updating BOTH consumers (app + server).
 
 ## Invariants
-- One registry of record: `modules.toml` is the only module registry; a module folder with an AGENTS.md that is not in it, and a registry entry with no folder, are both repo errors (check_repo).
+- One registry of record: the root `pom.xml` reactor (`<modules>`, walked recursively) is the only module registry; a module folder with an AGENTS.md that is not in the reactor, and a reactor entry with no folder, are both repo errors (`RepoContractTest.kt`).
 - Contract and registry files live only here: an OpenAPI spec outside shared/modules/api-contracts, or a model registry data file outside shared/modules/model-registry, is a repo error.
 - Cards are the contract: every module's AGENTS.md carries the nine required sections exactly once; a repeated or renamed section is a failure, not a first-wins read.
-- The build follows the registry: a code module's build file names exactly the code modules its `depends_on` lists — nothing more (a boundary breach) and nothing less (a missing edge) — and a target that applies only the base plugin (a container, or a module with no code yet) is exempt from the "less" half because it publishes no artifact to link against.
+- The build follows the reactor: a code module's `pom.xml` `<dependencies>` names exactly the code modules its `depends_on` lists — nothing more (a boundary breach, caught by Maven enforcer) and nothing less (a missing edge, a Kotlin "Unresolved reference" at compile time) — and a module with `<packaging>pom</packaging>` (a container, or a module with no code yet) is exempt from the "less" half because it publishes no artifact to link against.

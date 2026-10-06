@@ -41,8 +41,7 @@ set up their agents to work the way the project is built (ADR-019).
   are scanned for that before every change.
 
 ## Test Locations
-- Contract: `tests/contract/test_agent_skills_contract.py` (the structural
-  contract plus every invariant above). Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_agent_skills_contract.py`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

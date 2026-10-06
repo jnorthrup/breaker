@@ -24,7 +24,6 @@ import org.junit.Test
 class CardMatchesCodeTest {
 
     private val card = ModuleFiles.moduleRoot.resolve("AGENTS.md").readText()
-    private val registry = ModuleFiles.repoFile("modules.toml").readText()
 
     // A top-level declaration is read from the source text, because Kotlin's
     // `internal` on a class is invisible in bytecode. It starts at the start of a
@@ -82,15 +81,6 @@ class CardMatchesCodeTest {
     private fun mentions(text: String, word: String): Boolean =
         Regex("""\b${Regex.escape(word)}\b""").containsMatchIn(text)
 
-    /** The `public = "..."` value in this module's registry entry. */
-    private fun registryPublic(): String {
-        val start = registry.indexOf("[module.android_history]")
-        assertTrue("modules.toml has no [module.android_history] entry", start >= 0)
-        val end = registry.indexOf("\n[", start + 1).let { if (it < 0) registry.length else it }
-        val line = registry.substring(start, end).lines().first { it.startsWith("public") }
-        return line.substringAfter("\"").substringBeforeLast("\"")
-    }
-
     // ── what the module exposes ──────────────────────────────────────────
 
     @Test
@@ -125,12 +115,6 @@ class CardMatchesCodeTest {
                 .contains("SqliteHistoryStore.create(context, clock)"),
         )
 
-        val registered = registryPublic()
-        for (type in shipped) {
-            assertTrue("modules.toml public does not name $type: $registered", mentions(registered, type))
-        }
-        val leaked = everything.filterNot { it in shipped }.filter { mentions(registered, it) }
-        assertEquals("modules.toml public names internal types", emptyList<String>(), leaked)
     }
 
     @Test
@@ -314,15 +298,18 @@ class CardMatchesCodeTest {
         val adapter = ModuleFiles.mainSources().single { it.name == "SqliteHistoryDatabase.kt" }.readText()
         assertTrue(adapter.contains("import android.database.sqlite.SQLiteOpenHelper"))
         assertFalse("androidx.room is used", ModuleFiles.mainSources().any { it.readText().contains("androidx.room") })
-        val script = ModuleFiles.moduleRoot.resolve("build.gradle.kts").readText()
-        assertFalse("the build script pulls in Room", Regex("""(?i)\broom\b|androidx\.room""").containsMatchIn(script))
+        val pom = ModuleFiles.moduleRoot.resolve("pom.xml").readText()
+        assertFalse("the POM pulls in Room", Regex("""(?i)\broom\b|androidx\.room""").containsMatchIn(pom))
     }
 
     @Test
     fun `the card's Test Locations name only paths that exist`() {
         val section = cardSection("## Test Locations", "## Test Requirement")
         val paths = Regex("""`([^`]+)`""").findAll(section).map { it.groupValues[1] }.toList()
-        assertTrue("the section names the contract test", "tests/contract/test_history_contract.py" in paths)
+        assertTrue(
+            "the section names the structural contract test",
+            paths.any { it.contains("RepoContractTest.kt") },
+        )
         assertTrue(
             "the section names the module's own test folder",
             paths.any { it.startsWith("android/modules/history/src/test") },

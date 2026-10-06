@@ -16,15 +16,15 @@ internal object ModuleFiles {
 
     private val workingDirectory: File = File(System.getProperty("user.dir") ?: ".").absoluteFile
 
-    /** The module folder: the nearest folder above the working directory with a `build.gradle.kts`. */
+    /** The module folder: the nearest folder above the working directory with a `pom.xml`. */
     val moduleRoot: File by lazy {
-        findUp(workingDirectory, "a build.gradle.kts") { File(it, "build.gradle.kts").isFile }
+        findUp(workingDirectory, "a pom.xml") { File(it, "pom.xml").isFile }
     }
 
-    /** The repository root: the nearest folder above the module with both `modules.toml` and the version catalog. */
+    /** The repository root: the nearest folder above the module with both the root AGENTS.md and pom.xml. */
     val repoRoot: File by lazy {
-        findUp(moduleRoot, "both modules.toml and gradle/libs.versions.toml") {
-            File(it, "modules.toml").isFile && File(it, "gradle/libs.versions.toml").isFile
+        findUp(moduleRoot, "both AGENTS.md and pom.xml") {
+            File(it, "AGENTS.md").isFile && File(it, "pom.xml").isFile && File(it, "ARCHITECTURE.md").isFile
         }
     }
 

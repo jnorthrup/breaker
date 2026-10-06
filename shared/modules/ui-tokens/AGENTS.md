@@ -88,15 +88,15 @@ Trucking design tokens: colors (light/dark), type, spacing, breakpoints, CB mic 
 tokens.css, tokens.kt
 
 ## Depends On
-- shared (registered in modules.toml)
+- shared
 
 ## Does Not Own
 - Screen implementations (android/ui, server/web-fe)
 
 ## Test Locations
 - Unit (Python): `tests/unit/shared/ui-tokens/`. Run: python3 -m unittest discover -s tests/unit/shared/ui-tokens
-- Unit (Kotlin): `shared/modules/ui-tokens/src/test/kotlin/`. Run: ./gradlew :shared:modules:ui-tokens:test
-- Contract: `tests/contract/test_ui_tokens_contract.py`. Run: python3 -m unittest discover -s tests/contract -t tests/contract -p test_ui_tokens_contract.py
+- Unit (Kotlin): `shared/modules/ui-tokens/src/test/kotlin/`. Run: `./mvnw -pl shared/modules/ui-tokens test`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

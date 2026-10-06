@@ -12,9 +12,9 @@ screen components; consumes `shared/ui-tokens` (Trucking theme).
 Screen components
 
 ## Depends On
-- android (registered in modules.toml)
-- android_core (registered in modules.toml)
-- shared_ui_tokens (registered in modules.toml)
+- android
+- android_core
+- shared_ui_tokens
 
 ## Invariants
 screens render with ui-tokens; light/dark toggle persists (F25).
@@ -24,8 +24,8 @@ screens render with ui-tokens; light/dark toggle persists (F25).
 - Platform adapters (modules/*)
 
 ## Test Locations
-- Unit (Kotlin): `android/ui/src/test/kotlin/`, created with the module's first code. Run: `./gradlew :android:ui:test`
-- Contract: `tests/contract/test_ui_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_ui_contract.py`
+- Unit (Kotlin): `android/ui/src/test/kotlin/`, created with the module's first code. Run: `./mvnw -pl android/ui test`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

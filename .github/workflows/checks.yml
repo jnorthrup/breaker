@@ -46,13 +46,11 @@ jobs:
           done
 
   build:
-    name: Gradle build and Kotlin tests
+    name: Maven build and Kotlin tests
     if: github.server_url == 'https://github.com'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Gradle wrapper is the published one
-        uses: gradle/actions/wrapper-validation@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
       - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: temurin
@@ -60,13 +58,13 @@ jobs:
       - name: Android SDK platform 36
         run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-36" "build-tools;36.0.0" > /dev/null
       - name: Clean build, every Kotlin test
-        run: ./gradlew --no-daemon --no-build-cache --rerun-tasks build
+        run: ./mvnw -B -ntp --no-transfer-progress clean install
       - name: Kotlin tests ran and passed
         run: |
           python3 - <<'EOF'
           import glob, sys, xml.etree.ElementTree as ET
           total = bad = 0
-          for f in glob.glob("**/build/test-results/**/TEST-*.xml", recursive=True):
+          for f in glob.glob("**/target/surefire-reports/TEST-*.xml", recursive=True):
               s = ET.parse(f).getroot()
               total += int(s.get("tests", 0))
               bad += int(s.get("failures", 0)) + int(s.get("errors", 0))

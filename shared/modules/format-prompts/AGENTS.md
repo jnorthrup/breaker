@@ -32,15 +32,15 @@ Strict non-destructive formatting prompts for the server LLM.
 - `PromptCatalog` — the shipped prompt ids and the load-by-id path that refuses an id this module does not ship.
 
 ## Depends On
-- shared (registered in modules.toml)
+- shared
 
 ## Does Not Own
 - Formatter logic (android/format)
 - The LLM (server)
 
 ## Test Locations
-- Unit (Kotlin): `shared/modules/format-prompts/src/test/kotlin/dev/breaker/shared/prompts/`. Run: ./gradlew :shared:modules:format-prompts:test
-- Contract: `tests/contract/test_format_prompts_contract.py`. Run: python3 -m unittest discover -s tests/contract -t tests/contract -p test_format_prompts_contract.py
+- Unit (Kotlin): `shared/modules/format-prompts/src/test/kotlin/dev/breaker/shared/prompts/`. Run: `./mvnw -pl shared/modules/format-prompts test`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

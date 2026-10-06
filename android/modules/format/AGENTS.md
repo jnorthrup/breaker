@@ -39,17 +39,17 @@ formatted when `formatting_enabled` is off.
 - Formatting on/off setting respected (F10).
 
 ## Depends On
-- android (registered in modules.toml)
-- android_core (registered in modules.toml)
-- shared_format_prompts (registered in modules.toml)
+- android
+- android_core
+- shared_format_prompts
 
 ## Does Not Own
 - The LLM itself (server)
 - Prompts (shared/format-prompts)
 
 ## Test Locations
-- Unit (Kotlin): `android/modules/format/src/test/kotlin/`, created with the module's first code. Run: `./gradlew :android:modules:format:test`
-- Contract: `tests/contract/test_format_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_format_contract.py`
+- Unit (Kotlin): `android/modules/format/src/test/kotlin/`, created with the module's first code. Run: `./mvnw -pl android/modules/format test`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

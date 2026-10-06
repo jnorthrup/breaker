@@ -46,17 +46,17 @@ bounded budget so a stuck job degrades to a clear error, not a hang.
   hang (R4).
 
 ## Depends On
-- android (registered in modules.toml)
-- android_core (registered in modules.toml)
-- shared_api_contracts (registered in modules.toml)
+- android
+- android_core
+- shared_api_contracts
 
 ## Does Not Own
 - Local transcription (stt-ondevice)
 - The server queue (server/whisper-server)
 
 ## Test Locations
-- Unit (Kotlin): `android/modules/stt-server/src/test/kotlin/`, created with the module's first code. Run: `./gradlew :android:modules:stt-server:test`
-- Contract: `tests/contract/test_stt_server_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_stt_server_contract.py`
+- Unit (Kotlin): `android/modules/stt-server/src/test/kotlin/`, created with the module's first code. Run: `./mvnw -pl android/modules/stt-server test`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement
@@ -86,7 +86,7 @@ agents, not required: an outside contributor may write the code themselves
 
 ## Known Gotchas
 - OpenAI-compatible contract lives in shared/api-contracts — no drift.
-- The Gradle boundary check does not require the
-  `project(":shared:modules:api-contracts")` edge here while
-  `shared_api_contracts` is base-only (it publishes no artifact); the
-  moment it gains an artifact plugin the edge becomes required.
+- The Maven boundary check does not require a `<dependency>` on
+  `shared/modules/api-contracts` here while it has `<packaging>pom</packaging>`
+  (it publishes no artifact); the moment it gains `<packaging>jar</packaging>`
+  the edge becomes required.

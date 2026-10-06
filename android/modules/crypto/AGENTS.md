@@ -122,8 +122,8 @@ this card describes the module's target shape, not a change to `core` itself.
   box keypair exactly once, on its first login after both exist client-side.
 
 ## Depends On
-- android (registered in modules.toml)
-- android_core (registered in modules.toml)
+- android
+- android_core
 
 ## Does Not Own
 - Key wrapping of any kind performed server-side — there is none; the server
@@ -133,8 +133,8 @@ this card describes the module's target shape, not a change to `core` itself.
   in `whisper-server`, using a JVM libsodium binding (ADR-018)
 
 ## Test Locations
-- Unit (Kotlin): `android/modules/crypto/src/test/kotlin/`, created with the module's first code. Run: `./gradlew :android:modules:crypto:test`
-- Contract: `tests/contract/test_crypto_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_crypto_contract.py`
+- Unit (Kotlin): `android/modules/crypto/src/test/kotlin/`, created with the module's first code. Run: `./mvnw -pl android/modules/crypto test`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

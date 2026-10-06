@@ -466,7 +466,7 @@ class AppPrivateStorageTest {
     private fun moduleSources(): List<File> {
         val here = File(System.getProperty("user.dir") ?: return emptyList()).absoluteFile
         val root = generateSequence(here) { it.parentFile }
-            .firstOrNull { File(it, "build.gradle.kts").isFile }
+            .firstOrNull { File(it, "pom.xml").isFile }
             ?: return emptyList()
         return File(root, "src/main/kotlin").walkTopDown()
             .filter { it.isFile && it.extension == "kt" }

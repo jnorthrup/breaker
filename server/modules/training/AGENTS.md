@@ -36,7 +36,7 @@ Per-user voice phrase model training (CPU; GPU via Local Inference).
 TrainingApi
 
 ## Depends On
-- server (registered in modules.toml)
+- server
 
 ## Does Not Own
 - Sample recording (android/training-client)
@@ -44,7 +44,7 @@ TrainingApi
 
 ## Test Locations
 - Unit (Python): `tests/unit/server/training/`, created with the module's first code. Run: `python3 -m unittest discover -s tests/unit/server/training`
-- Contract: `tests/contract/test_training_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_training_contract.py`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement
