@@ -30,6 +30,6 @@ passing after. A docs-only PR says what was checked instead.
 - [ ] No new module, public-interface change or dependency without a maintainer's OK.
 - [ ] Tests ship in this PR, each watched failing first.
 - [ ] The module's README is updated; card changes are proposed above and, once a maintainer approves them, made in this PR.
-- [ ] `python3 tools/check_repo.py` prints `REPO CONSISTENT`.
-- [ ] `./gradlew --no-daemon --no-build-cache --rerun-tasks build` passes.
+- [ ] `./mvnw -pl tools test` passes.
+- [ ] `./mvnw -B -ntp clean install` passes.
 - [ ] No secrets, private hostnames or personal data anywhere.

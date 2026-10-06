@@ -66,8 +66,7 @@ have mangled names in Java; the token types are meant for Kotlin code.
 
 ```
 python3 -m unittest discover -s tests/unit/shared/ui-tokens -p 'test_*.py'
-python3 -m unittest discover -s tests/contract -p 'test_*.py'
-./gradlew :shared:modules:ui-tokens:test
+./mvnw -pl shared/modules/ui-tokens test
 ```
 
 Only the standard library is needed for the Python tests. Give `discover` the

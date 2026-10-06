@@ -62,7 +62,7 @@ has to ask for it to be opened up when it needs it.
 
 ## Build and test
 
-- Unit tests run on the JVM: `./gradlew :android:modules:history:testDebugUnitTest`.
+- Unit tests run on the JVM: `./mvnw -pl android/modules/history test`.
 - They use real SQLite through `sqlite-jdbc`, a test-only dependency that is
   never shipped in the app.
 - That is the desktop SQLite, not the phone's, so the SQL stays in the common
@@ -96,6 +96,6 @@ has to ask for it to be opened up when it needs it.
   `SQLiteOpenHelper` picks the databases folder and the shipped purge applies
   the SQL predicate (`created_at < ?`), so nothing in the shipped path calls
   them.
-- The structural contract test is `tests/contract/test_history_contract.py`.
+- The structural contract test is `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`.
 
 Full module card: `AGENTS.md` in this folder.

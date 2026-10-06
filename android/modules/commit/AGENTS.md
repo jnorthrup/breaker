@@ -33,16 +33,16 @@ Onboarding screen in the app links there (R5).
 - Preview toggle shows text before commit (optional, settings).
 
 ## Depends On
-- android (registered in modules.toml)
-- android_core (registered in modules.toml)
+- android
+- android_core
 
 ## Does Not Own
 - Formatting (format)
 - History storage (history)
 
 ## Test Locations
-- Unit (Kotlin): `android/modules/commit/src/test/kotlin/`, created with the module's first code. Run: `./gradlew :android:modules:commit:test`
-- Contract: `tests/contract/test_commit_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_commit_contract.py`
+- Unit (Kotlin): `android/modules/commit/src/test/kotlin/`, created with the module's first code. Run: `./mvnw -pl android/modules/commit test`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

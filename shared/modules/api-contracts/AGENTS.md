@@ -123,7 +123,7 @@ OpenAPI spec (openapi.yaml); Kotlin request and response types
   them identical to the spec.
 
 ## Depends On
-- shared (registered in modules.toml)
+- shared
 
 ## Does Not Own
 - Server implementation (server/*)
@@ -131,8 +131,8 @@ OpenAPI spec (openapi.yaml); Kotlin request and response types
 
 ## Test Locations
 - Unit (Python, the spec and its conformance checks): `tests/unit/shared/api-contracts/`, created with the module's first slice. Run: `python3 -m unittest discover -s tests/unit/shared/api-contracts`
-- Kotlin types (ADR-017): their tests run with `./gradlew :shared:modules:api-contracts:test` once the module applies the Kotlin plugin with its first types.
-- Contract: `tests/contract/test_api_contracts_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_api_contracts_contract.py`
+- Kotlin types (ADR-017): their tests run with `./mvnw -pl shared/modules/api-contracts test` once the module applies the Kotlin plugin with its first types.
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement
@@ -158,8 +158,8 @@ code.
 
 ## Known Gotchas
 - Client and server generate from THIS spec — no drift.
-- The Gradle boundary check does not require a consumer to name the
-  `project(":shared:modules:api-contracts")` edge while this module
-  publishes no artifact; the moment it gains code (applies an artifact
-  plugin) the edge becomes required, and the bijection check will then
-  demand it.
+- The Maven boundary check does not require a consumer to declare a
+  `<dependency>` on `shared/modules/api-contracts` while this module has
+  `<packaging>pom</packaging>` (publishes no artifact); the moment it gains
+  code (`<packaging>jar</packaging>`) the edge becomes required, and
+  `RepoContractTest.kt`'s boundary check will then demand it.

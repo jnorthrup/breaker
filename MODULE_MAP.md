@@ -1,12 +1,12 @@
 # MODULE_MAP.md — find the right module
 
-> One line per module. Regenerate by hand from `modules.toml` whenever the
-> registry changes.
+> One line per module. Regenerate by hand from the root `pom.xml` reactor whenever the
+> module set changes.
 
 ## android/ — the phone app (Kotlin, native Android)
 | Module | Path | Job |
 |--------|------|-----|
-| `app` | `android/app/` | Android entry, DI wiring, Gradle build |
+| `app` | `android/app/` | Android entry, DI wiring, Maven build |
 | `ui` | `android/ui/` | Screens: dictation, history, settings, auth, training |
 | `core` | `android/modules/core/` | Domain models, ports, use cases (no Android deps) |
 | `audio` | `android/modules/audio/` | Mic capture, VAD, noise suppression, WAV encode |

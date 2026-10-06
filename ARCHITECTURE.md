@@ -222,7 +222,7 @@ breaker/
 │          06 sideload & install how-to)
 ├── android/
 │   ├── AGENTS.md
-│   ├── app/                    # Android entry, DI wiring, Gradle
+│   ├── app/                    # Android entry, DI wiring, Maven
 │   ├── ui/                     # screens: dictation, history, settings, auth, training
 │   └── modules/  (core, audio, stt-ondevice, stt-server, transport,
 │                  format, phrases, gesture, overlay, commit, history,
@@ -238,8 +238,8 @@ breaker/
 
 ## 4. Android App Architecture
 
-**Stack:** Kotlin + native Android (base repo is Kotlin/Android already). Gradle +
-Android SDK. **Gradle distribution SHA-256 pinned** (Security Review fix #4) [1].
+**Stack:** Kotlin + native Android (base repo is Kotlin/Android already). Maven +
+Android SDK. **Maven wrapper distribution SHA-256 pinned** (supersedes Security Review fix #4's original Gradle pin) [1].
 
 **Layering (hexagonal):** `core` (pure Kotlin ports + use cases, no Android
 imports) · `ui` (views) · `modules/*` (adapters).
@@ -637,7 +637,7 @@ dedicated **APK signing key** (generated once, stored in a secrets store — nev
 in git, unlike the base repo's plaintext cert [1]). The public key + SHA-256 are
 served on `/v1/updates/latest.json` for client verification.
 
-**Update endpoint:** `sync-api` exposes `GET /v1/updates/latest.json` (sole registered owner per modules.toml/its own AGENTS.md — both `updater` and `web-fe`'s cards explicitly disclaim owning it), which resolves the latest GIT tag and returns version, APK URL, SHA-256, and signature.
+**Update endpoint:** `sync-api` exposes `GET /v1/updates/latest.json` (sole registered owner per the root pom.xml reactor/its own AGENTS.md — both `updater` and `web-fe`'s cards explicitly disclaim owning it), which resolves the latest GIT tag and returns version, APK URL, SHA-256, and signature.
 
 ## 16. Security & Threat Model
 
@@ -724,7 +724,7 @@ See `docs/04-build-order.md`. Summary:
 | Phase | Deliverable | Lane |
 |-------|-------------|------|
 | 0 | Fork + **4 Security Review fixes** + NOTICE + build/smoke-test gate | Bug Hunt |
-| 1 | Repo skeleton, Gradle, `core` ports + use cases | Orchestration |
+| 1 | Repo skeleton, Maven, `core` ports + use cases | Orchestration |
 | 2 | `audio` + `settings` + `history` | Coding |
 | 3 | `stt-ondevice` (sherpa-onnx local mode, model registry) | Coding |
 | 4 | **whisper-server (async queue) + VPN wiring** — Breaker's own container adds `/v1/audio/transcriptions` (async enqueue) + `/v1/jobs/{id}` (poll), forwarding to the admin-configured service (default: existing Whisper X container, unmodified). Absorbs former Phase 18. | Coding + Bug Hunt |

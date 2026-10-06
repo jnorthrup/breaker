@@ -240,16 +240,16 @@ Auth (users, roles, agent tokens), sync, updates, retention, store clear, log po
 AuthApi, SyncApi, AdminApi
 
 ## Depends On
-- server (registered in modules.toml)
-- shared_api_contracts (registered in modules.toml)
+- server
+- shared_api_contracts
 
 ## Does Not Own
 - Transcription (whisper-server)
 - UI (web-fe)
 
 ## Test Locations
-- Unit (Kotlin/Ktor, ADR-017): `server/modules/sync-api/src/test/kotlin/`, created with the module's first code. Run: `./gradlew :server:modules:sync-api:test` once this module's build file applies the Kotlin plugin (today it applies `base` only, so there is no test task yet).
-- Contract: `tests/contract/test_sync_api_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_sync_api_contract.py`
+- Unit (Kotlin/Ktor, ADR-017): `server/modules/sync-api/src/test/kotlin/`, created with the module's first code. Run: `./mvnw -pl server/modules/sync-api test` once this module's build file applies the Kotlin plugin (today it applies `base` only, so there is no test task yet).
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

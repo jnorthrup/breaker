@@ -28,7 +28,7 @@ private const val RENDER_DIRECTORY = "render"
 /** The one file whose job is to hand a view to the app, and may name the framework. */
 private const val ENTRY_FILE = "SettingsEntry.kt"
 
-/** The compiled form of [ENTRY_FILE]. */
+/** The compiled form of [ENTRY_FILE]. classFilesOf() strips the package prefix. */
 private const val ENTRY_CLASS = "SettingsEntryKt.class"
 
 /** The renderer class, which names the framework and so proves its carve-out is real. */
@@ -235,31 +235,18 @@ class AndroidConfinementGateTest {
     }
 
     @Test
-    fun `the variants are read one at a time, so a build of one is enough`() {
-        for (root in CLASS_ROOTS) {
-            assertTrue("an unexpected variant root was taken: ${root.absolutePath}", root.isDirectory)
-        }
-        // The built-in Kotlin toolchain names a variant's class directory `classes`,
-        // under `compile<Variant>Kotlin`, under the variant it belongs to; the variant
-        // is what distinguishes one root from another, so it is read off that parent.
-        assertEquals(
-            "the same variant was taken twice",
-            CLASS_ROOTS.size,
-            CLASS_ROOTS.map { it.parentFile.parentFile.name }.distinct().size,
-        )
+    fun `the class root is target classes, one root, no variants`() {
+        // Maven writes compiled classes to target/classes — one root, no variants.
+        // AGP wrote them to build/intermediates/built_in_kotlinc/<variant>/compile<Variant>Kotlin/classes;
+        // that multi-root layout no longer applies here.
+        assertEquals("exactly one class root", 1, CLASS_ROOTS.size)
+        val root = CLASS_ROOTS.single()
+        assertTrue("the class root must exist: ${root.absolutePath}", root.isDirectory)
+        assertEquals("the class root is named 'classes'", "classes", root.name)
+        assertEquals("the class root lives under 'target'", "target", root.parentFile.name)
         assertTrue(
-            "the variant roots are named as the build names them",
-            CLASS_ROOTS.all {
-                it.name == "classes" &&
-                    (it.parentFile.parentFile.name == "debug" || it.parentFile.parentFile.name == "release")
-            },
-        )
-        assertTrue(
-            "the search did not start at the module it belongs to",
-            CLASS_ROOTS.all {
-                it.parentFile.parentFile.parentFile.name == "built_in_kotlinc" &&
-                    it.parentFile.parentFile.parentFile.parentFile.name == "intermediates"
-            },
+            "the class root is under the module directory",
+            root.absolutePath.startsWith(File(MODULE_DIR, "target").absolutePath),
         )
     }
 
@@ -291,8 +278,8 @@ class AndroidConfinementGateTest {
             MAIN_SOURCES.any { (path, _) -> path == ENTRY_FILE },
         )
         assertTrue(
-            "the variant roots are not under the module directory",
-            CLASS_ROOTS.all { root -> root.absolutePath.startsWith(File(MODULE_DIR, "build").absolutePath) },
+            "the class root is under the module's target directory",
+            CLASS_ROOTS.all { root -> root.absolutePath.startsWith(File(MODULE_DIR, "target").absolutePath) },
         )
     }
 }

@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <!--‒‒ android/app — App entry, DI container.
+       Card: android/app/AGENTS.md   Registry: modules.toml [module.android_app]
+
+       The APK pipeline AGP used to run, as plain Maven steps (spike 003). Each step is a
+       published, pinned tool; none is a third-party Android plugin:
+         process-resources  manifest: identity filled in from the properties below
+         prepare-package    D8 from Google Maven; the runtime jars; their Java resources
+         package            aapt2 link, D8, add dex + Java resources, zipalign, sign
+         verify             apksigner verify, zipalign -c, aapt2 dump badging
+       Debug-signed with a throwaway key. Release signing is Phase 16's (deploy): its key
+       never enters the repository. -->
+  <parent>
+    <groupId>dev.breaker</groupId>
+    <artifactId>android</artifactId>
+    <version>0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <artifactId>android_app</artifactId>
+  <packaging>pom</packaging>
+
+  <properties>
+    <android.namespace>dev.breaker.dictation</android.namespace>
+    <!--‒‒ arm64-v8a is the primary target device architecture; no native code ships yet, so
+         nothing is filtered today. lib/arm64-v8a/*.so enters with sherpa-onnx (Phase 3). -->
+    <android.abi>arm64-v8a</android.abi>
+    <apk.debugKeystorePass>spike-only</apk.debugKeystorePass>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>dev.breaker</groupId>
+      <artifactId>android_core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>dev.breaker</groupId>
+      <artifactId>android_ui</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>process-manifest</id>
+            <phase>process-resources</phase>
+            <goals><goal>copy-resources</goal></goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/manifest</outputDirectory>
+              <resources>
+                <resource>
+                  <directory>src/main</directory>
+                  <includes><include>AndroidManifest.xml</include></includes>
+                  <filtering>true</filtering>
+                </resource>
+              </resources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>d8-tool</id>
+            <phase>prepare-package</phase>
+            <goals><goal>copy</goal></goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>com.android.tools</groupId>
+                  <artifactId>r8</artifactId>
+                  <version>${r8.version}</version>
+                  <destFileName>r8.jar</destFileName>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>${project.build.directory}/tools</outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <id>apk-classpath</id>
+            <phase>prepare-package</phase>
+            <goals><goal>copy-dependencies</goal></goals>
+            <configuration>
+              <!--‒‒ compile + runtime scope: android.jar (provided) and JUnit (test) stay out -->
+              <includeScope>runtime</includeScope>
+              <outputDirectory>${project.build.directory}/apk-libs</outputDirectory>
+            </configuration>
+          </execution>
+          <execution>
+            <!--‒‒ Java resources ride in the APK root, where ClassLoader.getResource finds
+                 them on the phone (tokens.css today; format-prompts' prompt file later). -->
+            <id>apk-java-resources</id>
+            <phase>prepare-package</phase>
+            <goals><goal>unpack-dependencies</goal></goals>
+            <configuration>
+              <includeScope>runtime</includeScope>
+              <excludes>**/*.class,META-INF/**</excludes>
+              <outputDirectory>${project.build.directory}/apk-javares</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <configuration>
+          <workingDirectory>${project.build.directory}</workingDirectory>
+        </configuration>
+        <executions>
+          <execution>
+            <id>aapt2-link</id>
+            <phase>package</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <executable>${android.buildToolsDir}/aapt2</executable>
+              <arguments>
+                <argument>link</argument>
+                <argument>-I</argument><argument>${android.jar}</argument>
+                <argument>--manifest</argument><argument>manifest/AndroidManifest.xml</argument>
+                <argument>--debug-mode</argument>
+                <argument>-o</argument><argument>unsigned.apk</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>d8</id>
+            <phase>package</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <executable>sh</executable>
+              <arguments>
+                <argument>-c</argument>
+                <!-- release strips line numbers and variable names from the dex.
+                     JVM/Dex debug vs release is assertions on|off and this strip.
+                     Signing key selection is separate (apksigner below). -->
+                <argument>rm -rf dex &amp;&amp; mkdir dex &amp;&amp; "${java.home}/bin/java" -cp tools/r8.jar com.android.tools.r8.D8 --release ${d8.desugar.flag} --min-api ${android.minSdk} --lib "${android.jar}" --output dex apk-libs/*.jar</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>add-dex</id>
+            <phase>package</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <executable>${java.home}/bin/jar</executable>
+              <arguments><argument>uMf</argument><argument>unsigned.apk</argument><argument>-C</argument><argument>dex</argument><argument>.</argument></arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>add-java-resources</id>
+            <phase>package</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <executable>${java.home}/bin/jar</executable>
+              <arguments><argument>uMf</argument><argument>unsigned.apk</argument><argument>-C</argument><argument>apk-javares</argument><argument>.</argument></arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <!--‒‒ 16 KiB page alignment: required for uncompressed .so on 16 KiB-page devices. -->
+            <id>zipalign</id>
+            <phase>package</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <executable>${android.buildToolsDir}/zipalign</executable>
+              <arguments><argument>-P</argument><argument>16</argument><argument>-f</argument><argument>4</argument><argument>unsigned.apk</argument><argument>aligned.apk</argument></arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>debug-key</id>
+            <phase>package</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <executable>sh</executable>
+              <arguments>
+                <argument>-c</argument>
+                <argument>[ -f debug.p12 ] || "${java.home}/bin/keytool" -genkeypair -keystore debug.p12 -storetype PKCS12 -alias debug -keyalg RSA -keysize 2048 -validity 30 -dname "CN=breaker debug (throwaway)" -storepass ${apk.debugKeystorePass} -keypass ${apk.debugKeystorePass}</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>sign</id>
+            <phase>package</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <executable>${android.buildToolsDir}/apksigner</executable>
+              <environmentVariables>
+                <JAVA_TOOL_OPTIONS>--enable-native-access=ALL-UNNAMED</JAVA_TOOL_OPTIONS>
+              </environmentVariables>
+              <arguments>
+                <argument>sign</argument>
+                <argument>--ks</argument><argument>debug.p12</argument>
+                <argument>--ks-pass</argument><argument>pass:${apk.debugKeystorePass}</argument>
+                <argument>--out</argument><argument>breaker-debug.apk</argument>
+                <argument>aligned.apk</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>verify-signature</id>
+            <phase>verify</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <executable>${android.buildToolsDir}/apksigner</executable>
+              <environmentVariables>
+                <JAVA_TOOL_OPTIONS>--enable-native-access=ALL-UNNAMED</JAVA_TOOL_OPTIONS>
+              </environmentVariables>
+              <arguments>
+                <argument>verify</argument>
+                <argument>--verbose</argument>
+                <argument>breaker-debug.apk</argument>
+              </arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>verify-alignment</id>
+            <phase>verify</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <executable>${android.buildToolsDir}/zipalign</executable>
+              <arguments><argument>-c</argument><argument>-P</argument><argument>16</argument><argument>4</argument><argument>breaker-debug.apk</argument></arguments>
+            </configuration>
+          </execution>
+          <execution>
+            <id>verify-identity</id>
+            <phase>verify</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <executable>${android.buildToolsDir}/aapt2</executable>
+              <arguments><argument>dump</argument><argument>badging</argument><argument>breaker-debug.apk</argument></arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

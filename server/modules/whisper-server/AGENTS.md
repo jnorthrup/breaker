@@ -99,17 +99,17 @@ same no-key rule above is what covers it, not a separate phase check.
 TranscriptionApi, QueueWorker
 
 ## Depends On
-- server (registered in modules.toml)
-- shared_api_contracts (registered in modules.toml)
-- server_sync_api (registered in modules.toml)
+- server
+- shared_api_contracts
+- server_sync_api
 
 ## Does Not Own
 - The configured transcription service itself
 - Auth (sync-api)
 
 ## Test Locations
-- Unit (Kotlin/Ktor, ADR-017): `server/modules/whisper-server/src/test/kotlin/`, created with the module's first code. Run: `./gradlew :server:modules:whisper-server:test` once this module's build file applies the Kotlin plugin (today it applies `base` only, so there is no test task yet).
-- Contract: `tests/contract/test_whisper_server_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_whisper_server_contract.py`
+- Unit (Kotlin/Ktor, ADR-017): `server/modules/whisper-server/src/test/kotlin/`, created with the module's first code. Run: `./mvnw -pl server/modules/whisper-server test` once this module's build file applies the Kotlin plugin (today it applies `base` only, so there is no test task yet).
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

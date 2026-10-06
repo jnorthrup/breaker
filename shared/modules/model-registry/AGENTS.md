@@ -63,14 +63,14 @@ Generated Kotlin model registry (ADR-016)
   consumers name a model by these constants, never by reading `models.yaml`.
 
 ## Depends On
-- shared (registered in modules.toml)
+- shared
 
 ## Does Not Own
 - Download/verify logic (android/stt-ondevice)
 
 ## Test Locations
 - Unit (Python): `tests/unit/shared/model-registry/`, created with the module's first code. Run: `python3 -m unittest discover -s tests/unit/shared/model-registry`
-- Contract: `tests/contract/test_model_registry_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_model_registry_contract.py`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement
@@ -109,8 +109,8 @@ agents, not required: an outside contributor may write the code themselves
   generated from it. Its catalog is one JSON file per model; ours is the single
   `models.yaml`. Do not copy its download path: it records no per-file checksum,
   and its download URLs follow a moving branch.
-- The Gradle boundary check does not require a consumer to name the
-  `project(":shared:modules:model-registry")` edge while this module
-  publishes no artifact; the moment it gains code (applies an artifact
-  plugin) the edge becomes required, and the bijection check will then
-  demand it.
+- The Maven boundary check does not require a consumer to declare a
+  `<dependency>` on `shared/modules/model-registry` while this module has
+  `<packaging>pom</packaging>` (publishes no artifact); the moment it gains
+  code (`<packaging>jar</packaging>`) the edge becomes required, and
+  `RepoContractTest.kt`'s boundary check will then demand it.

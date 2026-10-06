@@ -50,7 +50,7 @@ Local Server services: transcription, sync, web, training, deploy.
 Server entry, container wiring
 
 ## Depends On
-- shared (registered in modules.toml)
+- shared
 
 ## Does Not Own
 - Phone client (android/*)
@@ -58,7 +58,7 @@ Server entry, container wiring
 
 ## Test Locations
 - No unit tests: this folder only groups the modules under it and holds no code.
-- Contract: `tests/contract/test_server_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_server_contract.py`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

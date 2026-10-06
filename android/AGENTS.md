@@ -7,7 +7,7 @@ target, arm64-v8a primary. Hexagonal layout: `core` (pure Kotlin ports + use
 cases) + `ui` (views) + `modules/*` (adapters).
 
 **Base:** swept OpenWhispr Android fork. Phase 0 applied: package id changed off
-`com.edib.openwhispr`, in-app updater deleted, Gradle SHA-256 pinned, no cloud
+`com.edib.openwhispr`, in-app updater deleted, build-tool SHA-256 pinned, no cloud
 fallthrough, NOTICE added.
 
 **Priority:** **server-primary** — Local Server via ZeroTier is the primary
@@ -16,7 +16,7 @@ transcription + formatting path; on-device sherpa-onnx is the fallback.
 **Voice control (v1):** "Breaker Breaker" (wake + auto-record) and "And I'm Gone"
 (send) via sherpa-onnx KWS. Shake + tap remain the manual fallbacks.
 
-**Build:** Gradle (pinned distribution SHA-256). Android SDK API 30+ (Android 11+; matches gradle/libs.versions.toml minSdk). SQLite via Room.
+**Build:** Maven (pinned wrapper distribution SHA-256). Android SDK API 30+ (Android 11+; matches gradle/libs.versions.toml minSdk). SQLite via Room.
 
 **Lanes:** Orchestration owns `core`; Coding owns `modules/*` and `ui`.
 
@@ -56,10 +56,10 @@ variables (no UI-framework dependency); `android/ui` applies them.
 The phone client: Kotlin/native Android app shell, DI wiring, screens.
 
 ## Public Interface
-App entry, Gradle build, app-level wiring
+App entry, Maven build, app-level wiring
 
 ## Depends On
-- shared (registered in modules.toml)
+- shared
 
 ## Does Not Own
 - Server-side logic (server/*)
@@ -67,7 +67,7 @@ App entry, Gradle build, app-level wiring
 
 ## Test Locations
 - No unit tests: this folder only groups the modules under it and holds no code.
-- Contract: `tests/contract/test_android_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_android_contract.py`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

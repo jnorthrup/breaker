@@ -133,11 +133,9 @@ private fun builtVariantRoots(): List<File> {
     // the legacy build/tmp/kotlin-classes/<variant> layout no longer exists, so the
     // roots are taken from the intermediates layout and named after the variant that
     // owns them.
-    val base = File(MODULE_DIR, "build/intermediates/built_in_kotlinc")
-    val roots = listOf("debug", "release")
-        .map { variant ->
-            File(base, "$variant/compile${variant.replaceFirstChar { it.uppercase() }}Kotlin/classes")
-        }
+    // Maven writes the module's classes to target/classes: one root, no variants.
+    val base = File(MODULE_DIR, "target")
+    val roots = listOf(File(base, "classes"))
         .filter { root -> root.isDirectory && root.walkTopDown().any { it.name == KNOWN_CLASS } }
     assertTrue(
         "no compiled class was found under ${base.absolutePath}; the gates need a build to read",

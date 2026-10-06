@@ -1,0 +1,487 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <!-- Breaker — root POM: the parent of every module and the reactor root.
+
+       Every version lives here and only here (the role gradle/libs.versions.toml had).
+       Each one carries the registry it was read from and the day it was read.
+       Toolchain: Maven 3.10.0 via ./mvnw (distribution SHA-256 pinned in
+       .mvn/wrapper/maven-wrapper.properties) · Kotlin 2.4.20 · JDK 25 ·
+       compileSdk 36 · targetSdk 36 · minSdk 30. -->
+  <groupId>dev.breaker</groupId>
+  <artifactId>breaker</artifactId>
+  <version>0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>agent-skills</module>
+    <module>android</module>
+    <module>server</module>
+    <module>shared</module>
+    <module>tools</module>
+  </modules>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java.release>25</java.release>
+    <android.compileSdk>36</android.compileSdk>
+    <android.targetSdk>36</android.targetSdk>
+    <android.minSdk>30</android.minSdk>
+    <android.jar>${env.ANDROID_HOME}/platforms/android-${android.compileSdk}/android.jar</android.jar>
+    <!-- read 2026-10-06 from https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-maven-plugin/maven-metadata.xml -->
+    <kotlin.version>2.4.20</kotlin.version>
+    <!-- read 2026-10-06 from https://repo1.maven.org/maven2/junit/junit/maven-metadata.xml -->
+    <junit.version>4.13.2</junit.version>
+    <!-- read 2026-10-06 from https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/maven-metadata.xml -->
+    <sqlite-jdbc.version>3.53.4.0</sqlite-jdbc.version>
+    <!-- read 2026-10-06 from https://repo1.maven.org/maven2/org/apache/maven/plugins/<artifact>/maven-metadata.xml, each -->
+    <clean.version>3.5.0</clean.version>
+    <resources.version>3.5.0</resources.version>
+    <compiler.version>3.16.0</compiler.version>
+    <surefire.version>3.6.0</surefire.version>
+    <jar.version>3.5.1</jar.version>
+    <install.version>3.2.0</install.version>
+    <deploy.version>3.2.0</deploy.version>
+    <site.version>3.22.0</site.version>
+    <enforcer.version>3.6.3</enforcer.version>
+    <dependency.version>3.11.0</dependency.version>
+    <!-- read 2026-10-06 from https://repo1.maven.org/maven2/org/codehaus/mojo/exec-maven-plugin/maven-metadata.xml -->
+    <exec.version>3.6.4</exec.version>
+    <!-- D8 (Java bytecode to dex), pinned here because build-tools 36.0.0 ships D8 8.10.9,
+         which rejects Java 25 class files ("Unsupported class file major version 69").
+         read 2026-10-06 from https://dl.google.com/android/maven2/com/android/tools/r8/maven-metadata.xml -->
+    <r8.version>9.5.22</r8.version>
+    <!-- aapt2, zipalign, apksigner: build-tools;36.0.0 as installed by sdkmanager
+         (checksum in dl.google.com/android/repository/repository2-3.xml), as CI does today. -->
+    <android.buildTools>36.0.0</android.buildTools>
+    <android.buildToolsDir>${env.ANDROID_HOME}/build-tools/${android.buildTools}</android.buildToolsDir>
+    <!-- Empty by default; gradle-migration profile sets this to the desugaring flag -->
+    <d8.desugar.flag></d8.desugar.flag>
+  </properties>
+
+  <!-- Same two repositories the Gradle settings declared: Google's (Android tooling) and Central. -->
+  <repositories>
+    <repository>
+      <id>google</id>
+      <url>https://dl.google.com/android/maven2</url>
+      <releases><checksumPolicy>fail</checksumPolicy></releases>
+      <snapshots><enabled>false</enabled></snapshots>
+    </repository>
+  </repositories>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- The Android platform API. Not on any public Maven repository: it comes from the
+           SDK platform package (platforms;android-36 = platform-36_r02.zip, checksum in
+           dl.google.com/android/repository/repository2-3.xml), installed by sdkmanager,
+           and is copied into the local repository by the root build (install-android-jar
+           below). Scope provided, not system: a system path is an ${env...} expression,
+           and a POM holding one is INVALID when read back from a repository, which makes
+           Maven drop that module's transitive dependencies with a warning (spike 001). -->
+      <dependency>
+        <groupId>dev.breaker.sdk</groupId>
+        <artifactId>android</artifactId>
+        <version>${android.compileSdk}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.xerial</groupId>
+        <artifactId>sqlite-jdbc</artifactId>
+        <version>${sqlite-jdbc.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <!-- Every module gets the Kotlin standard library and the JUnit runner, as the Kotlin
+       Gradle plugin and each build file's testImplementation(libs.junit) gave them.
+       Kotlin test classes in the reactor therefore need no extra dependencies to use:
+         - javax.xml (DocumentBuilderFactory, Element): in the JDK, not on Maven Central
+         - java.io / java.nio: in the JDK
+         - kotlin-stdlib: this block
+         - JUnit 4: this block (test scope)
+       A module whose tests need only JDK + stdlib + JUnit declares no <dependencies> at all. -->
+  <dependencies>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib</artifactId>
+      <version>${kotlin.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
+    <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.jetbrains.kotlin</groupId>
+          <artifactId>kotlin-maven-plugin</artifactId>
+          <version>${kotlin.version}</version>
+          <configuration>
+            <jvmTarget>${java.release}</jvmTarget>
+          </configuration>
+          <executions>
+            <execution>
+              <id>compile</id>
+              <goals><goal>compile</goal></goals>
+            </execution>
+            <execution>
+              <id>test-compile</id>
+              <goals><goal>test-compile</goal></goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>${surefire.version}</version>
+          <configuration>
+            <trimStackTrace>false</trimStackTrace>
+            <argLine>--enable-native-access=ALL-UNNAMED</argLine>
+            <systemPropertyVariables>
+              <breaker.repoRoot>${maven.multiModuleProjectDirectory}</breaker.repoRoot>
+            </systemPropertyVariables>
+          </configuration>
+        </plugin>
+        <plugin><artifactId>maven-clean-plugin</artifactId><version>${clean.version}</version></plugin>
+        <plugin><artifactId>maven-resources-plugin</artifactId><version>${resources.version}</version></plugin>
+        <plugin><artifactId>maven-compiler-plugin</artifactId><version>${compiler.version}</version>
+          <configuration><release>${java.release}</release></configuration></plugin>
+        <plugin><artifactId>maven-jar-plugin</artifactId><version>${jar.version}</version></plugin>
+        <plugin><artifactId>maven-install-plugin</artifactId><version>${install.version}</version></plugin>
+        <plugin><artifactId>maven-deploy-plugin</artifactId><version>${deploy.version}</version></plugin>
+        <plugin><artifactId>maven-site-plugin</artifactId><version>${site.version}</version></plugin>
+        <plugin><artifactId>maven-dependency-plugin</artifactId><version>${dependency.version}</version>
+          <!-- dependency:analyze runs after test-compile and checks actual bytecode for
+               used-but-undeclared and declared-but-unused dependencies. This replaces the
+               commented-out Python boundary/wiring contract checks: the reactor already
+               refuses to compile a module that omits a required sibling, and this catches
+               the inverse (a declared dep that nothing in the bytecode actually uses).
+
+               Known suppressions:
+                 org.jetbrains:annotations — a transitive of kotlin-stdlib; Kotlin emits
+                   @NotNull/@Nullable annotations directly, so bytecode references it even
+                   though no module declares it. Suppress rather than add a redundant dep.
+                 org.xerial:sqlite-jdbc (history, test scope) — loaded via DriverManager at
+                   runtime, not a compile-time bytecode reference. A JDBC driver is always
+                   "unused declared" by this tool's definition; the enforcer bannedDependencies
+                   rule covers the shipping concern. -->
+          <configuration>
+            <ignoredUnusedDeclaredDependencies>
+              <dep>org.xerial:sqlite-jdbc</dep>
+            </ignoredUnusedDeclaredDependencies>
+            <ignoredUsedUndeclaredDependencies>
+              <dep>org.jetbrains:annotations</dep>
+            </ignoredUsedUndeclaredDependencies>
+            <failOnWarning>true</failOnWarning>
+            <ignoreNonCompile>true</ignoreNonCompile>
+          </configuration>
+          <executions>
+            <execution>
+              <id>analyze-deps</id>
+              <phase>verify</phase>
+              <goals><goal>analyze-only</goal></goals>
+            </execution>
+          </executions>
+        </plugin>
+        <!-- kotlin-maven-plugin compiler flags available but not yet applied:
+             -Werror: promotes all kotlinc warnings to build failures (six warnings
+               visible today: nullable receiver on File?, unused expression,
+               non-exhaustive when, deprecated constructors).
+             -Xexplicit-api=strict: every public declaration requires an explicit
+               visibility modifier and return type.
+
+             Note: compiler authors are on record attributing more than a few
+             production, build, and runtime errors to private and protected member
+             "coding standards" which does not align with standards and best-practices
+             commonly endorsed. No policy changes have been introduced to Breaker;
+             pertinent to ivory-tower vs. technical debt realities. -->
+        <plugin><groupId>org.codehaus.mojo</groupId><artifactId>exec-maven-plugin</artifactId><version>${exec.version}</version></plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <!-- Copies the SDK's android.jar (installed and checksum-verified by sdkmanager) into
+           the local repository as dev.breaker.sdk:android:${android.compileSdk}, so every
+           Android module depends on it as an ordinary provided-scope artifact. Root only. -->
+      <plugin>
+        <artifactId>maven-install-plugin</artifactId>
+        <version>${install.version}</version>
+        <inherited>false</inherited>
+        <executions>
+          <execution>
+            <id>install-android-jar</id>
+            <phase>validate</phase>
+            <goals><goal>install-file</goal></goals>
+            <configuration>
+              <file>${android.jar}</file>
+              <groupId>dev.breaker.sdk</groupId>
+              <artifactId>android</artifactId>
+              <version>${android.compileSdk}</version>
+              <packaging>jar</packaging>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>${enforcer.version}</version>
+        <executions>
+          <execution>
+            <id>breaker-rules</id>
+            <goals><goal>enforce</goal></goals>
+            <configuration>
+              <rules>
+                <requireJavaVersion><version>[25,)</version></requireJavaVersion>
+                <!-- No plugin runs at an unpinned version. -->
+                <requirePluginVersions/>
+                <!-- History's JVM tests run on desktop SQLite; the driver must never ship.
+                     Checked on the RESOLVED graph, transitive edges included. -->
+                <bannedDependencies>
+                  <searchTransitive>true</searchTransitive>
+                  <excludes>
+                    <exclude>org.xerial:sqlite-jdbc:*:*:compile</exclude>
+                    <exclude>org.xerial:sqlite-jdbc:*:*:runtime</exclude>
+                    <exclude>org.xerial:sqlite-jdbc:*:*:provided</exclude>
+                    <exclude>org.xerial:sqlite-jdbc:*:*:system</exclude>
+                  </excludes>
+                  <message>sqlite-jdbc is test-only (android/modules/history card): it must never reach a shipped classpath.</message>
+                </bannedDependencies>
+              </rules>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
+  <!-- gradle-migration profile: implements the Gradle/AGP features Maven can subsume.
+       Activate with: ./mvnw -P gradle-migration verify
+       Inactive by default so CI can adopt it incrementally.
+
+       What this covers:
+         1. D8 desugaring  — AGP ran desugarDebugFileDependencies on the app module;
+                             D8 -desugaring backports Java API calls to older Android.
+         2. Duplicate class check — AGP ran checkDebugDuplicateClasses on the app;
+                             enforcer:banDuplicateClasses catches the same at resolve time.
+
+       What remains out of scope (no Maven answer today):
+         - Android Lint        (148 tasks in Gradle; no maintained Maven plugin)
+         - AARs                (every Android library module produced AARs; load-bearing
+                                when any module adds res/ or a manifest; JARs work until then)
+         - Instrumented tests  (androidTest variant; requires a device harness)
+         - Native lib packaging (mergeJniLibFolders; relevant at Phase 3 sherpa-onnx)
+         - Resource processing (merge/parse/package/generateRFile; no resources yet) -->
+  <profiles>
+    <profile>
+      <id>gradle-migration</id>
+
+      <!-- 1. D8 desugaring: override the app module's D8 exec argument to add -desugaring.
+              The app POM's exec step is inherited and overridden here at the reactor level
+              via a property; the app POM reads ${d8.desugar.flag} and appends it to the
+              D8 command. Default is empty so the baseline build is unaffected. -->
+      <properties>
+        <d8.desugar.flag>--desugaring</d8.desugar.flag>
+      </properties>
+
+      <build>
+        <plugins>
+          <!-- 2. Duplicate class check: banDuplicateClasses on the resolved compile
+                  classpath. AGP ran checkDebugDuplicateClasses; this catches the same
+                  condition at dependency resolution time across the reactor. -->
+          <plugin>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <version>${enforcer.version}</version>
+            <executions>
+              <execution>
+                <id>gradle-migration-rules</id>
+                <goals><goal>enforce</goal></goals>
+                <configuration>
+                  <rules>
+                    <banDuplicateClasses>
+                      <scopes>
+                        <scope>compile</scope>
+                        <scope>runtime</scope>
+                      </scopes>
+                      <findAllDuplicates>true</findAllDuplicates>
+                      <ignoreWhenIdentical>true</ignoreWhenIdentical>
+                      <message>Duplicate classes found on the compile/runtime classpath (AGP checkDuplicateClasses equivalent).</message>
+                    </banDuplicateClasses>
+                  </rules>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+
+    <!-- phase3-sherpa-onnx: untested, for example only. -->
+    <profile>
+      <id>phase3-sherpa-onnx</id>
+      <properties>
+        <sherpa.onnx.version>1.10.30</sherpa.onnx.version>
+        <sherpa.model.artifact>sherpa-onnx-kws-zipformer-gigaspeech-3.3M-2024-01-01</sherpa.model.artifact>
+        <sherpa.model.sha256>0000000000000000000000000000000000000000000000000000000000000000</sherpa.model.sha256>
+      </properties>
+
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <!-- Fetch pre-built arm64-v8a .so files from the sherpa-onnx Maven release. -->
+              <execution>
+                <id>unpack-sherpa-jni</id>
+                <phase>prepare-package</phase>
+                <goals><goal>unpack</goal></goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>com.github.k2-foss.sherpa-onnx</groupId>
+                      <artifactId>sherpa-onnx-android-arm64-v8a</artifactId>
+                      <version>${sherpa.onnx.version}</version>
+                      <type>aar</type>
+                    </artifactItem>
+                  </artifactItems>
+                  <includes>jni/arm64-v8a/*.so</includes>
+                  <outputDirectory>${project.build.directory}/apk-native</outputDirectory>
+                </configuration>
+              </execution>
+              <!-- Fetch the KWS model AAR from Maven Central alongside the JNI artifact. -->
+              <execution>
+                <id>copy-sherpa-model</id>
+                <phase>prepare-package</phase>
+                <goals><goal>copy</goal></goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>com.github.k2-foss.sherpa-onnx</groupId>
+                      <artifactId>${sherpa.model.artifact}</artifactId>
+                      <version>${sherpa.onnx.version}</version>
+                      <type>tar.bz2</type>
+                      <destFileName>kws-model.tar.bz2</destFileName>
+                    </artifactItem>
+                  </artifactItems>
+                  <outputDirectory>${project.build.directory}/sherpa</outputDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <executions>
+              <!-- Verify model archive against the SHA published in the release checksum.txt.
+                   Pin matches the pattern used for the Maven wrapper distribution. -->
+              <execution>
+                <id>verify-sherpa-model-sha</id>
+                <phase>prepare-package</phase>
+                <goals><goal>exec</goal></goals>
+                <configuration>
+                  <executable>sh</executable>
+                  <arguments>
+                    <argument>-c</argument>
+                    <argument>echo "${sherpa.model.sha256}  ${project.build.directory}/sherpa/kws-model.tar.bz2" | sha256sum -c -</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+              <!-- Extract model into assets/ so the APK packages it. -->
+              <execution>
+                <id>extract-sherpa-model</id>
+                <phase>prepare-package</phase>
+                <goals><goal>exec</goal></goals>
+                <configuration>
+                  <executable>sh</executable>
+                  <arguments>
+                    <argument>-c</argument>
+                    <argument>mkdir -p ${project.build.directory}/apk-assets/assets &amp;&amp; tar -xjf ${project.build.directory}/sherpa/kws-model.tar.bz2 -C ${project.build.directory}/apk-assets/assets</argument>
+                  </arguments>
+                </configuration>
+              </execution>
+              <!-- Fold lib/arm64-v8a/*.so and assets/ into the APK using the same
+                   jar step already used for dex and java resources. -->
+              <execution>
+                <id>add-native-libs</id>
+                <phase>package</phase>
+                <goals><goal>exec</goal></goals>
+                <configuration>
+                  <executable>${java.home}/bin/jar</executable>
+                  <arguments>
+                    <argument>uMf</argument><argument>unsigned.apk</argument>
+                    <argument>-C</argument><argument>apk-native</argument><argument>.</argument>
+                  </arguments>
+                  <workingDirectory>${project.build.directory}</workingDirectory>
+                </configuration>
+              </execution>
+              <execution>
+                <id>add-model-assets</id>
+                <phase>package</phase>
+                <goals><goal>exec</goal></goals>
+                <configuration>
+                  <executable>${java.home}/bin/jar</executable>
+                  <arguments>
+                    <argument>uMf</argument><argument>unsigned.apk</argument>
+                    <argument>-C</argument><argument>apk-assets</argument><argument>.</argument>
+                  </arguments>
+                  <workingDirectory>${project.build.directory}</workingDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- proguard profile: R8 shrinking and obfuscation. Untested, for example only.
+         Activate with: ./mvnw -P proguard verify
+         Not default. ProGuard/R8 shrinking was not enabled in the original Gradle build. -->
+    <profile>
+      <id>proguard</id>
+      <properties>
+        <proguard.rules>${project.basedir}/proguard-rules.pro</proguard.rules>
+        <proguard.map>${project.build.directory}/mapping.txt</proguard.map>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <executions>
+              <!-- Replace the plain D8 dex step with R8, which runs ProGuard shrinking
+                   and obfuscation before dexing. The output is a shrunken release dex. -->
+              <execution>
+                <id>r8-shrink</id>
+                <phase>package</phase>
+                <goals><goal>exec</goal></goals>
+                <configuration>
+                  <executable>${java.home}/bin/java</executable>
+                  <arguments>
+                    <argument>-cp</argument><argument>${project.build.directory}/tools/r8.jar</argument>
+                    <argument>com.android.tools.r8.R8</argument>
+                    <argument>--release</argument>
+                    <argument>--min-api</argument><argument>${android.minSdk}</argument>
+                    <argument>--lib</argument><argument>${android.jar}</argument>
+                    <argument>--pg-conf</argument><argument>${proguard.rules}</argument>
+                    <argument>--pg-map-output</argument><argument>${proguard.map}</argument>
+                    <argument>--output</argument><argument>${project.build.directory}/dex</argument>
+                    <argument>${project.build.directory}/apk-libs/*.jar</argument>
+                  </arguments>
+                  <workingDirectory>${project.build.directory}</workingDirectory>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

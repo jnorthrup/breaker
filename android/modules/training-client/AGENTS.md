@@ -28,16 +28,16 @@ Record phrase samples, upload, download trained model + checksum verify.
 - Samples deletable; deletion removes them server-side.
 
 ## Depends On
-- android (registered in modules.toml)
-- android_core (registered in modules.toml)
+- android
+- android_core
 
 ## Does Not Own
 - Training itself (server/training)
 - Phrase detection (phrases)
 
 ## Test Locations
-- Unit (Kotlin): `android/modules/training-client/src/test/kotlin/`, created with the module's first code. Run: `./gradlew :android:modules:training-client:test`
-- Contract: `tests/contract/test_training_client_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_training_client_contract.py`
+- Unit (Kotlin): `android/modules/training-client/src/test/kotlin/`, created with the module's first code. Run: `./mvnw -pl android/modules/training-client test`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

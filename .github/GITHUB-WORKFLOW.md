@@ -63,7 +63,7 @@ description. The maintainer reviews; when the checks pass, it merges into
 
 ### Changes outside a module
 
-Docs, `tools/`, CI and `modules.toml` changes are not part of any module flow.
+Docs, `tools/`, CI and root `pom.xml` reactor changes are not part of any module flow.
 They go in their own pull request straight into `main`, never mixed into a
 module PR, and anything beyond a typo starts with an issue so a maintainer can
 agree to it first (`CONTRIBUTING.md` section 7).
@@ -166,8 +166,8 @@ push to `module/<name>` directly (flow 1).
 ## Definition of done for a module's main PR
 
 - [ ] All sub-module work is on the branch; sub-PRs merged.
-- [ ] `python3 tools/check_repo.py` prints `REPO CONSISTENT`.
-- [ ] `./gradlew --no-daemon --no-build-cache --rerun-tasks build` passes.
+- [ ] `./mvnw -pl tools test` passes (reactor/card contract checks).
+- [ ] `./mvnw -B -ntp clean install` passes.
 - [ ] Fail-first test evidence in the PR description.
 - [ ] Module README updated; card changes proposed in the description and,
       once a maintainer approves them, made in the PR.

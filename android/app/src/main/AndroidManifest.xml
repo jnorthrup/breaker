@@ -2,11 +2,9 @@
 <!--
   Card: android/app/AGENTS.md   Registry: modules.toml [module.android_app]
 
-  The Android application plugin requires a main manifest to exist before it can
-  process, package or lint this module, so the module ships one from the moment
-  the build system exists. The identity of the app is set in build.gradle.kts
-  (namespace, applicationId, minSdk, targetSdk); this file adds nothing that is
-  declared anywhere else.
+  The app's identity is set once, as properties in android/app/pom.xml and the root
+  POM (namespace, minSdk, targetSdk); the build fills the placeholders below in at
+  process-resources (spike 003), where AGP used to inject the same values.
 
   Deliberately absent: activities, services, receivers, providers, permissions,
   the application class, icon, label and theme. The app shell — entry point and
@@ -16,4 +14,10 @@
   "app launches to the settings screen" invariant on a module that cannot
   launch anything.
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="${android.namespace}">
+    <uses-sdk
+        android:minSdkVersion="${android.minSdk}"
+        android:targetSdkVersion="${android.targetSdk}" />
+    <application />
+</manifest>

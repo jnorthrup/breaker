@@ -60,16 +60,17 @@ tests/contract` (`.github/CONTRIBUTING.md` §4). Distinct from that module's own
 the ports every feature module implements, and the use cases that run a
 dictation. No Android imports, no I/O, testable with plain JUnit. Every other
 Android module depends on `core`; `core` depends on nothing
-(`android/modules/core/AGENTS.md`; `modules.toml` `[module.android_core]`).
+(`android/modules/core/AGENTS.md`; the root `pom.xml` reactor).
 
 **DEK** — The random 256-bit key (AES-256-GCM) that actually encrypts a
 user's transcriptions. Generated client-side at the account's first-login
 key bootstrap, wrapped by the KEK, and never generated, derived, or seen in
 unwrapped form by the server (`ADR-006-encryption.md`).
 
-**`depends_on`** — The field in each `modules.toml` entry listing which other
-module IDs a module may use. Must stay acyclic; modules never import each
-other outside what this field allows — they talk through `core`'s ports or
+**`depends_on`** — The "Depends On" section in each module's `AGENTS.md` card,
+mirrored by that module's `pom.xml` `<dependencies>`, listing which other
+modules it may use. Must stay acyclic; modules never import each
+other outside what this lists — they talk through `core`'s ports or
 the app's DI wiring instead (root `AGENTS.md` rule 3; `ADR-001-repo-layout.md`).
 
 **Fail-first proof** — The evidence a test actually protects something: break
@@ -140,13 +141,13 @@ syncs to the server once connectivity returns — sync isn't gated on which
 mode produced the text (`docs/01-requirements.md` F13; `ARCHITECTURE.md` §11).
 
 **Module** — One folder in the repo tree with its own `AGENTS.md` card,
-`README.md`, and entry in `modules.toml` — the unit one PR builds ("one
+`README.md`, and entry in the root `pom.xml` reactor — the unit one PR builds ("one
 module per pull request" — `.github/CONTRIBUTING.md` "One rule up front";
 `ADR-001-repo-layout.md`). A module can itself contain sub-modules, several
 folders deep.
 
 **`MODULE_MAP.md`** — A one-line-per-module lookup table (path + job), kept
-in sync with `modules.toml` by hand whenever the registry changes — the
+in sync with the root `pom.xml` reactor by hand whenever the module set changes — the
 fastest way to find which folder owns something.
 
 **`MODULES.md`** — The top-level module registry/index: repo layout, base +
@@ -172,8 +173,8 @@ implements it (`ARCHITECTURE.md` §4; the port list in
 
 **Public Interface** — The card section naming the functions, classes and
 types a module exposes to the rest of the repo. Changing it needs a
-maintainer's OK first (`.github/CONTRIBUTING.md` §5, §7). `modules.toml` carries the
-same information under its `public` field.
+maintainer's OK first (`.github/CONTRIBUTING.md` §5, §7). The card's "Public Interface" section carries the
+same information.
 
 **Rank** — An AI agent's position in the build hierarchy: **project leader**
 (owns the plan and the module structure), **IT manager** (splits one module
@@ -191,11 +192,11 @@ may and may not do, the README says what it actually does today; it must be
 updated in the same PR as any code change to that module
 (`.github/CONTRIBUTING.md` §5, §7).
 
-**Registry (`modules.toml`)** — The machine-checkable module registry: one
-`[module.*]` table per module and sub-module (`path`, `owns`, `does_not_own`,
+**Registry (root `pom.xml` reactor)** — The machine-checkable module registry: the `<modules>`
+tree, walked recursively, one entry per module and sub-module (`path`, `owns`, `does_not_own`,
 `depends_on`, `public`, `card`). The folder tree must match it exactly;
-`tools/check_repo.py` verifies that and must print `REPO CONSISTENT`
-(`modules.toml` header comment; `.github/CONTRIBUTING.md` §3, §7).
+`RepoContractTest.kt` (run via `./mvnw -pl tools test`) verifies that.
+(root `pom.xml`; `.github/CONTRIBUTING.md` §3, §7).
 
 **Requirement ID prefixes (F, N, T, R, D)** — Five separate numbered series
 used across the docs, and they do not share one counter:
@@ -251,7 +252,7 @@ one sitting" — the piece of a module one worker takes from an IT manager
 **STT** — Speech-to-text generally; concretely, the `core.SttEngine` port,
 implemented by `stt-ondevice` (sherpa-onnx, local fallback) and `stt-server`
 (polls `whisper-server`'s job API, primary path)
-(`android/modules/core/AGENTS.md` "Ports"; `modules.toml`).
+(`android/modules/core/AGENTS.md` "Ports"; the root `pom.xml` reactor).
 
 **Text commit / text insertion** — The repo's required term for landing
 dictated text into the app the user was using — `InputMethodService
@@ -268,13 +269,13 @@ container (`docs/01-requirements.md` F26; `ADR-008-configurable-service.md`).
 **Unit test** — A module's own-language test (JUnit for Kotlin, `unittest`
 for the one Python module that has one so far), listed per card under "Test
 Locations" next to that module's contract test — e.g.
-`./gradlew :android:modules:core:test` (`.github/CONTRIBUTING.md` §4;
+`./mvnw -pl android/modules/core test` (`.github/CONTRIBUTING.md` §4;
 `android/modules/core/AGENTS.md`).
 
 **VAD** — Voice activity detection: finding where speech starts and stops in
 the captured audio, so the silence around it can be trimmed. Part of the
 `audio` module's job, alongside noise suppression and WAV encoding
-(`modules.toml` `[module.android_audio]`); its card says how the result
+(`android/modules/audio/pom.xml`); its card says how the result
 reaches core (`android/modules/audio/AGENTS.md`).
 
 **Wake phrase / send phrase** — The two CB-slang voice triggers: **"Breaker

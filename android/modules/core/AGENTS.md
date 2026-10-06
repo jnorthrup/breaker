@@ -112,7 +112,7 @@ Domain models, ports, use cases. No Android imports.
 Domain models, ports, use cases
 
 ## Depends On
-- android (registered in modules.toml)
+- android
 
 ## Does Not Own
 - Android platform code
@@ -120,8 +120,8 @@ Domain models, ports, use cases
 
 ## Test Locations
 - Unit: `src/test/kotlin/dev/breaker/dictation/core/` — plain JUnit 4, run with
-  `./gradlew :android:modules:core:test`
-- Contract: `tests/contract/test_core_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_core_contract.py`
+  `./mvnw -pl android/modules/core test`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

@@ -1,7 +1,7 @@
 # AGENTS.md — android/app/
 
 ## Purpose
-Android entry point, dependency injection wiring, Gradle build.
+Android entry point, dependency injection wiring, Maven build.
 
 **Build phase:** Phase 1. Needs first: `core` (on `main`); it wires each other module in as that module lands.
 
@@ -9,12 +9,12 @@ Android entry point, dependency injection wiring, Gradle build.
 app-level composition of all modules.
 
 ## Owns
-app entry, DI container, Gradle build.
+app entry, DI container, Maven build.
 
 ## Depends On
-- android (registered in modules.toml)
-- android_core (registered in modules.toml)
-- android_ui (registered in modules.toml)
+- android
+- android_core
+- android_ui
 
 ## Invariants
 app launches to the settings screen; DI wiring composes all modules.
@@ -24,8 +24,8 @@ app launches to the settings screen; DI wiring composes all modules.
 - Domain logic (core)
 
 ## Test Locations
-- Unit (Kotlin): `android/app/src/test/kotlin/`, created with the module's first test. Run: `./gradlew :android:app:test`
-- Contract: `tests/contract/test_app_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_app_contract.py`
+- Unit (Kotlin): `android/app/src/test/kotlin/`, created with the module's first test. Run: `./mvnw -pl android/app test`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

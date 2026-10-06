@@ -109,8 +109,8 @@ above, not for this one.
 - Mic indicator surfaced in UI while recording (privacy, T5).
 
 ## Depends On
-- android (registered in modules.toml)
-- android_core (registered in modules.toml)
+- android
+- android_core
 
 ## Does Not Own
 - Transcription (stt-*)
@@ -118,8 +118,8 @@ above, not for this one.
 
 ## Test Locations
 - Unit: `android/modules/audio/src/test/kotlin/dev/breaker/dictation/audio/`
-  — plain JUnit 4, run with `./gradlew :android:modules:audio:test`
-- Contract: `tests/contract/test_audio_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_audio_contract.py`
+  — plain JUnit 4, run with `./mvnw -pl android/modules/audio test`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

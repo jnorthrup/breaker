@@ -66,8 +66,8 @@ namespace server-side (N13).
   (`docs/04-build-order.md`, "Gates and releases").
 
 ## Depends On
-- android (registered in modules.toml)
-- android_core (registered in modules.toml)
+- android
+- android_core
 
 ## Does Not Own
 - Encryption (crypto)
@@ -75,8 +75,8 @@ namespace server-side (N13).
 - History storage (history)
 
 ## Test Locations
-- Unit (Kotlin): `android/modules/sync/src/test/kotlin/`, created with the module's first code. Run: `./gradlew :android:modules:sync:test`
-- Contract: `tests/contract/test_sync_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_sync_contract.py`
+- Unit (Kotlin): `android/modules/sync/src/test/kotlin/`, created with the module's first code. Run: `./mvnw -pl android/modules/sync test`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

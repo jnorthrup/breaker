@@ -62,8 +62,8 @@ from the delete, is a module design choice; the spec sets no tombstone lifetime.
   leaves a tombstone.
 
 ## Depends On
-- android (registered in modules.toml)
-- android_core (registered in modules.toml)
+- android
+- android_core
 
 ## Does Not Own
 - Sync transport (sync)
@@ -73,9 +73,8 @@ from the delete, is a module design choice; the spec sets no tombstone lifetime.
 
 ## Test Locations
 - Unit: `android/modules/history/src/test/kotlin/dev/breaker/dictation/history/`
-- Contract: `tests/contract/test_history_contract.py`
-- Run the unit tests from the repo root: ./gradlew :android:modules:history:testDebugUnitTest
-- Run the contract test from the repo root: python3 -m unittest discover -s tests/contract -t tests/contract -p test_history_contract.py
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
+- Run the unit tests from the repo root: `./mvnw -pl android/modules/history test`
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

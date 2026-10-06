@@ -45,17 +45,17 @@ Floating tile = CB mic glyph + LED bar meter (WindowManager overlay, F36).
 FloatingTile
 
 ## Depends On
-- android (registered in modules.toml)
-- android_core (registered in modules.toml)
-- shared_ui_tokens (registered in modules.toml)
+- android
+- android_core
+- shared_ui_tokens
 
 ## Does Not Own
 - Dictation UI (ui)
 - Gesture/voice triggers
 
 ## Test Locations
-- Unit (Kotlin): `android/modules/overlay/src/test/kotlin/`, created with the module's first code. Run: `./gradlew :android:modules:overlay:test`
-- Contract: `tests/contract/test_overlay_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_overlay_contract.py`
+- Unit (Kotlin): `android/modules/overlay/src/test/kotlin/`, created with the module's first code. Run: `./mvnw -pl android/modules/overlay test`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement

@@ -26,17 +26,17 @@ SHA-256 pins) — used by `stt-ondevice` for download + verify.
 - Model registry parsed; invalid SHA-256 blocks model load.
 
 ## Depends On
-- android (registered in modules.toml)
-- android_core (registered in modules.toml)
-- shared_model_registry (registered in modules.toml)
+- android
+- android_core
+- shared_model_registry
 
 ## Does Not Own
 - Server URL auth (auth-client)
 - Model catalog (shared/model-registry)
 
 ## Test Locations
-- Unit (Kotlin): `android/modules/settings/src/test/kotlin/`, created with the module's first code. Run: `./gradlew :android:modules:settings:test`
-- Contract: `tests/contract/test_settings_contract.py`. Run: `python3 -m unittest discover -s tests/contract -t tests/contract -p test_settings_contract.py`
+- Unit (Kotlin): `android/modules/settings/src/test/kotlin/`, created with the module's first code. Run: `./mvnw -pl android/modules/settings test`
+- Structural contract: `tools/src/test/kotlin/dev/breaker/tools/RepoContractTest.kt`, run with every build (`./mvnw clean install`): card sections, README presence, reactor/registry agreement, no cycles.
 - Every run must report more than 0 tests. A mistyped path or pattern runs nothing and still prints OK.
 
 ## Test Requirement
@@ -66,7 +66,7 @@ agents, not required: an outside contributor may write the code themselves
 
 ## Known Gotchas
 - Server URL is a first-run setting — never hardcode.
-- The Gradle boundary check does not require the
-  `project(":shared:modules:model-registry")` edge here while
-  `shared_model_registry` is base-only (it publishes no artifact); the
-  moment it gains an artifact plugin the edge becomes required.
+- The Maven boundary check does not require a `<dependency>` on
+  `shared/modules/model-registry` here while it has `<packaging>pom</packaging>`
+  (it publishes no artifact); the moment it gains `<packaging>jar</packaging>`
+  the edge becomes required.

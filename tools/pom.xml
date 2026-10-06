@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <!-- tools — Build verification tests (Kotlin replacements for the spike-era Python scripts).
+
+       These tests verify the Maven reactor structure matches modules.toml and that dependency
+       boundaries hold. They run as part of the normal test phase: ./mvnw -pl tools test
+
+       No <dependencies> block: the root POM universally provides kotlin-stdlib (compile) and
+       junit (test), and the tests use only JDK APIs (javax.xml, java.io, java.nio) which are
+       on the JDK module path without any Maven coordinate. See the root POM's comment above
+       <dependencies> for the full list of what the reactor provides for free. -->
+  <parent>
+    <groupId>dev.breaker</groupId>
+    <artifactId>breaker</artifactId>
+    <version>0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <artifactId>tools</artifactId>
+  <packaging>jar</packaging>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-maven-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
+</project>

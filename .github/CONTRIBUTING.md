@@ -20,7 +20,7 @@ file.
    ADR the card cites. An **ADR** (Architecture Decision Record) is a file in
    `decisions/` that records a settled decision and why.
 3. **Set up the build.** JDK 25 (the newest LTS)
-   and the repo's Gradle wrapper (nothing to install — use `./gradlew`).
+   and the repo's Maven wrapper (nothing to install — use `./mvnw`).
    Python 3.11 or newer for the check scripts.
 4. **Build and test.** Run the exact commands in the card's "Test Locations".
    See section 4.
@@ -49,15 +49,14 @@ file.
   setup below.
 - **Manual setup:**
   - JDK 25 (the build runs on it; the newest LTS release)
-  - The repo's Gradle wrapper: `./gradlew` — Gradle 9.8.0 comes with the repo,
+  - The repo's Maven wrapper: `./mvnw` — Maven 3.10.0 comes with the repo,
     pinned by SHA-256. Nothing to install.
   - Python 3.11+ for the check scripts.
   - Android SDK platform 36 (compileSdk and targetSdk 36, minSdk 30) — needed
     to build the Android app.
-  - Kotlin 2.4.20 and AGP 9.4.1 are pinned in `gradle/libs.versions.toml` —
-    don't change them in your PR.
-- **Verify your setup:** `python3 tools/check_repo.py` must print
-  `REPO CONSISTENT`.
+  - Kotlin 2.4.20 is pinned in the root `pom.xml` `<properties>` —
+    don't change it in your PR.
+- **Verify your setup:** `./mvnw -pl tools test` must pass.
 
 **Server-side modules:** they need a speech-to-text service to test against.
 `whisper-server` exposes Breaker's own job API to the phone
@@ -71,18 +70,16 @@ say in the PR description which one you used.
 ## 4. Build and test
 
 - **Build everything and run every Kotlin test:**
-  `./gradlew --no-daemon build`
+  `./mvnw -B -ntp clean install`
 - **The maintainers' check** (forces a clean rebuild — run this before
   opening a PR):
-  `./gradlew --no-daemon --no-build-cache --rerun-tasks build`
+  `./mvnw -B -ntp clean install`
 - **One module's Kotlin tests:** the command is in that module card's
-  "Test Locations", e.g. `./gradlew :android:modules:core:test`.
-- **Repo structure check:** `python3 tools/check_repo.py` — must print
-  `REPO CONSISTENT`.
-- **Structure tests for every module:**
-  `python3 -m unittest discover -s tests/contract -t tests/contract`
-  (430 tests today).
-- **Python unit tests** exist for one module so far:
+  "Test Locations", e.g. `./mvnw -pl android/modules/core test`.
+- **Structural + card checks for every module:**
+  `./mvnw -pl tools test`
+- **Python unit tests** exist for a few modules so far (where the module
+  itself is Python/config, e.g. `shared/modules/ui-tokens`):
   `python3 -m unittest discover -s tests/unit/shared/ui-tokens`.
   Trap: running `discover` on `tests/unit` from the root finds 0 tests — use
   the exact command in the card. The automated checks run every folder
@@ -90,7 +87,7 @@ say in the PR description which one you used.
 - **Every test run must report more than 0 tests.** A mistyped path or
   pattern runs nothing and still prints `OK`, which looks like a pass.
 - **Automated checks on every PR** (the `checks` workflow,
-  `.github/workflows/checks.yml`): the build, every test tier, the repo
+  `.github/workflows/checks.yml`): the build, every test tier, the reactor
   consistency check and a secret scan. A PR that fails them doesn't merge.
   Run the commands above yourself first; it's quicker than waiting.
 
@@ -163,16 +160,16 @@ work is not finished — keep it local until it is.
 - [ ] Changed only what the card says the module owns.
 - [ ] No new module and no public-interface change without a maintainer's OK
       (the maintainer may ask for an ADR: see `decisions/README.md`).
-- [ ] No new dependency (a library added to `gradle/libs.versions.toml`)
-      without a maintainer's OK first: every new dependency gets a security
-      and license review.
+- [ ] No new dependency (a library added to the root `pom.xml` `<properties>`/
+      `<dependencyManagement>`) without a maintainer's OK first: every new
+      dependency gets a security and license review.
 - [ ] Tests ship in the PR, with the fail-first proof in the description.
 - [ ] The module's README is updated in the same PR. Card changes are
       proposed in the PR description first; once a maintainer approves them in
       review, make them in the same PR before it merges, so the card is
       accurate when the PR lands.
-- [ ] `python3 tools/check_repo.py` prints `REPO CONSISTENT`.
-- [ ] `./gradlew --no-daemon --no-build-cache --rerun-tasks build` passes.
+- [ ] `./mvnw -pl tools test` passes.
+- [ ] `./mvnw -B -ntp clean install` passes.
 - [ ] PR description links the module's issue: `Closes #NNN` on the module's
       main PR, `Refs #NNN` on a sub-PR (see "Issue and PR conventions" below).
 - [ ] PR description covers: what and why, which module, the test evidence,
@@ -189,7 +186,7 @@ pass, and a maintainer approves. Opening a PR fills in the description
 template (`.github/pull_request_template.md`); the issue forms for bug reports
 and design proposals are in `.github/ISSUE_TEMPLATE/`.
 
-Changes outside a module (docs, `tools/`, CI, `modules.toml`) go in their own
+Changes outside a module (docs, `tools/`, CI, the root `pom.xml` reactor) go in their own
 pull request into `main`, never mixed into a module PR. Open an issue first for
 anything beyond a typo, so a maintainer can agree to it before you start. The
 same checks and review apply; the PR description says what was checked.

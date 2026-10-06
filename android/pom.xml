@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <!-- android: App entry, build, app-level wiring.
+       Card: android/AGENTS.md   Registry: modules.toml [module.android] -->
+  <parent>
+    <groupId>dev.breaker</groupId>
+    <artifactId>breaker</artifactId>
+    <version>0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <artifactId>android</artifactId>
+  <packaging>pom</packaging>
+  <modules>
+    <module>app</module>
+    <module>modules/audio</module>
+    <module>modules/auth-client</module>
+    <module>modules/commit</module>
+    <module>modules/core</module>
+    <module>modules/crypto</module>
+    <module>modules/format</module>
+    <module>modules/gesture</module>
+    <module>modules/history</module>
+    <module>modules/overlay</module>
+    <module>modules/phrases</module>
+    <module>modules/settings</module>
+    <module>modules/stt-ondevice</module>
+    <module>modules/stt-server</module>
+    <module>modules/sync</module>
+    <module>modules/training-client</module>
+    <module>modules/transport</module>
+    <module>ui</module>
+    <module>modules/updater</module>
+  </modules>
+
+  <!-- Every Android module under this folder compiles against the platform API.
+       android/modules/core does NOT: its parent is the root POM, so an Android
+       import in core fails to compile. -->
+  <properties>
+    <!-- true on this container (packaging=pom, no jar to bundle); children override to false -->
+    <maven.bundle-aar.skip>true</maven.bundle-aar.skip>
+    <!-- set to true to skip lint when cmdline-tools is not installed -->
+    <maven.lint.skip>false</maven.lint.skip>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>dev.breaker.sdk</groupId>
+      <artifactId>android</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.jetbrains.kotlin</groupId>
+          <artifactId>kotlin-maven-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>compile</id>
+              <configuration>
+                <!-- main code sees the Android API surface only, as AGP compiles it -->
+                <args><arg>-no-jdk</arg></args>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <!-- AAR packaging: every Android library module produced bundleDebugAar in Gradle.
+           Skipped on the android container (packaging=pom); inherited by child jar modules. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>bundle-aar</id>
+            <phase>package</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <skip>${maven.bundle-aar.skip}</skip>
+              <executable>sh</executable>
+              <arguments>
+                <argument>-c</argument>
+                <argument>
+                  set -e;
+                  AAR="${project.build.directory}/${project.artifactId}-${project.version}.aar";
+                  STAGING="${project.build.directory}/aar-staging";
+                  rm -rf "$STAGING" &amp;&amp; mkdir -p "$STAGING/res";
+                  cp "${project.build.directory}/${project.artifactId}-${project.version}.jar" "$STAGING/classes.jar";
+                  [ -f "${project.basedir}/src/main/AndroidManifest.xml" ] \
+                    &amp;&amp; cp "${project.basedir}/src/main/AndroidManifest.xml" "$STAGING/AndroidManifest.xml" \
+                    || printf '&lt;?xml version="1.0" encoding="utf-8"?&gt;\n&lt;manifest package="${project.groupId}.${project.artifactId}"/&gt;\n' &gt; "$STAGING/AndroidManifest.xml";
+                  touch "$STAGING/R.txt";
+                  (cd "$STAGING" &amp;&amp; "${java.home}/bin/jar" cMf "$AAR" .);
+                  echo "AAR: $AAR"
+                </argument>
+              </arguments>
+            </configuration>
+          </execution>
+
+          <!-- Lint: ran across all 18 Android modules in Gradle (lintDebug, lintAnalyzeDebug).
+               Requires cmdline-tools in ANDROID_HOME. Skip with -Dmaven.lint.skip=true. -->
+          <execution>
+            <id>lint</id>
+            <phase>verify</phase>
+            <goals><goal>exec</goal></goals>
+            <configuration>
+              <skip>${maven.lint.skip}</skip>
+              <executable>${env.ANDROID_HOME}/cmdline-tools/latest/bin/lint</executable>
+              <arguments>
+                <argument>--classpath</argument>
+                <argument>${project.build.directory}/classes</argument>
+                <argument>--sources</argument>
+                <argument>${project.basedir}/src/main/kotlin</argument>
+                <argument>--libraries</argument>
+                <argument>${android.jar}</argument>
+                <argument>--xml</argument>
+                <argument>${project.build.directory}/lint-results.xml</argument>
+                <argument>--exitcode</argument>
+                <argument>${project.basedir}</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
